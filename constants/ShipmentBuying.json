@@ -1,0 +1,23 @@
+{
+    "requestToken": "amzn1.rq.057e7b4f-ac28-4114-8511-b5cbd2d8f1cf.101",
+    "rateId": "0611cb23-eefc-478c-acf2-f046aeb23830",
+    "requestedDocumentSpecification": {
+        "format": "PDF",
+        "size": {
+            "length": 6,
+            "unit": "INCH",
+            "width": 4
+        },
+        "pageLayout": "LEFT",
+        "needFileJoining": true,
+        "requestedDocumentTypes": [
+            "PACKSLIP",
+            "LABEL"
+        ]
+    },
+    "requestedValueAddedServices": [
+        {
+            "id": "DELIVERY_CONFIRMATION"
+        }
+    ]
+}

@@ -1,0 +1,129 @@
+@import "login.scss";
+@import "sidebar.scss";
+
+.text-blue{ color: #1F41A8; }
+.text-yellow-1{ color: #d5a00e; }
+
+@-webkit-keyframes rotating {
+  from{
+    -webkit-transform: rotate(0deg);
+  }
+  to{
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+.rotating {
+  -webkit-animation: rotating 1s linear infinite;
+}
+
+.blue-link{
+  color: #1F41A8;
+  font-weight: 500;
+  cursor: pointer;
+}
+.blue-link:hover{
+  color: #839ef1;
+}
+
+.flex{
+  display: flex;
+  align-items: center;
+}
+
+.grey-txt { color: grey; }
+.silver-txt { color: silver; }
+.blue-2-txt { color: rgb(31, 78, 148); }
+
+.order-image{
+  border: 1px solid rgba(192, 192, 192, 0.562);
+  padding: 5px;
+  margin-bottom: 10px;
+  max-width: 50px;
+}
+.order-table-item{
+  margin-bottom: 15px;
+  height: 70px;
+}
+
+.shipment-btn{
+  transition-duration: 300ms;
+  background-color: #f0ac24;
+  padding: 2px 10px;
+  color: white;
+  font-weight: 500;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.shipment-btn:hover{
+  transition-duration: 300ms;
+  background-color: #b46422;
+  color: white;
+}
+
+.shipping-item-box{
+  background-color: white;
+  border: 1px solid rgba(128, 128, 128, 0.668);
+  border-radius: 10px;
+  padding: 10px;
+  width: 320px;
+}
+.shipping-item-img {
+  width: 30px!important;
+  height: 30px;
+}
+
+.checked-rate-row{
+  transition-duration: 300ms;
+  border: 1px solid rgba(19, 91, 167, 0.562);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  background-color: rgb(206, 240, 255);
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+  box-shadow: 2px 2px 5px 0px rgba(44, 49, 67, 0.35);
+  -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+  -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+}
+.rate-row{
+  transition-duration: 300ms;
+  border: 1px solid rgba(192, 192, 192, 0.562);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  background-color: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+  box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+  -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+  -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+}
+.rate-row:hover{
+  transition-duration: 300ms;
+  background-color: rgb(235, 255, 255);
+  border: 1px solid rgba(41, 119, 221, 0.562);
+}
+.already-bought{
+  display: flex;
+  align-items: center;
+  gap:5px;
+  border: 2px solid rgb(107, 181, 39);
+  padding: 10px 30px;
+  background-color: rgba(195, 239, 130, 0.359);
+  border-radius: 10px;
+}
+
+.tracking-info-box{
+  background-color: #c0d6ff68;
+  padding: 20px;
+  border-left: 8px solid rgb(17, 67, 125);
+}

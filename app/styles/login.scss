@@ -1,0 +1,68 @@
+.login-styles {
+    overflow: hidden;
+    .pg-container{
+        height: 100vh;
+        width: 100.5vw;
+        background-image: url("../../public/images/login-bg.png");
+        background-repeat: no-repeat;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .login-input-container{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .inp-icon{
+        color: white;
+        font-size: 18px;
+        position: relative;
+        left: 24px;
+    }
+
+    .login-input{
+        transition-duration: 300ms;
+        background-color: rgba(255, 255, 255, 0);
+        border: 1px solid white;
+        outline: none;
+        padding: 10px 20px 10px 40px;
+        border-radius: 25px;
+        width: 300px;
+        position: relative;
+        right: 10px;
+        color: white;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .login-input:focus{
+        transition-duration: 300ms;
+        border: 1px solid grey;
+    }
+
+    .login-btn{
+        transition-duration: 300ms;
+        margin-top: 30px;
+        width: 300px;
+        position: relative;
+        left: 9px;
+        border-radius: 25px;
+        padding: 10px;
+        font-weight: 500;
+        background-color: rgb(34, 34, 34);
+        border: 1px solid rgb(34, 34, 34);
+        color: white;
+    }
+    .login-btn:hover{
+        transition-duration: 300ms;
+        border: 1px solid white;
+        color: black;
+        background-color: white;
+    }
+}

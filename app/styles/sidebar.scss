@@ -1,0 +1,50 @@
+.sidebar-styles {
+  .ant-layout-sider{
+    background-color: #1E2B3E!important;
+    height: 100vh;
+  }
+  
+  .profile{
+    height: 200px;
+    margin-top: 50px;
+  }
+  .profile-img{
+    transition-duration: 300ms;
+    border-radius: 100%;
+    margin: 0px auto;
+    background-color: rgba(192, 192, 192, 0.5);
+  }
+  .profile-large{
+    transition-duration: 300ms;
+    border: 5px solid #1F41A8;
+    height: 90px;
+    width: 90px;
+  }
+  .profile-small{
+    transition-duration: 300ms;
+    border: 2px solid #1F41A8;
+    height: 30px;
+    width: 30px;
+  }
+
+  .side-menu-styles{
+    background-color: #1E2B3E!important;
+    font-weight: 500!important;
+    ul > li::before{
+      background-color: #1E2B3E!important;
+    }
+    ul > li::after{
+      background-color: #1E2B3E!important;
+    }
+    ul{
+      background-color: #1E2B3E!important;
+    }
+    ul > li:hover{
+      background-color: #1E2B3E!important;
+    }
+    li.ant-menu-item.ant-menu-item-selected{
+      background-color: #1E2B3E!important;
+      color: #1F41A8;
+    }
+  }
+}

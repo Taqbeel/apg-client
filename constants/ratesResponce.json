@@ -1,0 +1,278 @@
+{
+    "availableValueAddedServiceGroups": [
+        {
+            "groupDescription": "Confirmation",
+            "groupId": "VAS_GROUP_ID_CONFIRMATION",
+            "isRequired": true,
+            "valueAddedServices": [
+                {
+                    "cost": {
+                        "unit": "USD",
+                        "value": 3.5
+                    },
+                    "id": "SIGNATURE_CONFIRMATION",
+                    "name": "Signature confirmation"
+                },
+                {
+                    "cost": {
+                        "unit": "USD",
+                        "value": 0.0
+                    },
+                    "id": "DELIVERY_CONFIRMATION",
+                    "name": "Delivery confirmation"
+                }
+            ]
+        }
+    ],
+    "benefits": {
+        "excludedBenefits": [],
+        "includedBenefits": [
+            "A2Z_GUARANTEE",
+            "NEGATIVE_FEEDBACK_SUPPRESSION",
+            "SAFE_T"
+        ]
+    },
+    "billedWeight": null,
+    "carrierId": "USPS",
+    "carrierName": "USPS",
+    "paymentType": null,
+    "promise": {
+        "deliveryWindow": {
+            "end": "2024-06-11T06:59:59Z",
+            "start": "2024-06-11T06:59:59Z"
+        },
+        "pickupWindow": {
+            "end": null,
+            "start": null
+        }
+    },
+    "rateId": "2f778fe5-1736-4cd5-bdf6-a635be6aa9d0",
+    "rateItemList": [
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "OVERSIZE_SURCHARGE",
+            "rateItemNameLocalization": "Oversize Surcharge",
+            "rateItemType": "MANDATORY"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 3.96
+            },
+            "rateItemID": "BASE_RATE",
+            "rateItemNameLocalization": "Base Rate",
+            "rateItemType": "MANDATORY"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "TRANSACTION_FEE",
+            "rateItemNameLocalization": "Transaction Fee",
+            "rateItemType": "MANDATORY"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "HIDDEN_POSTAGE",
+            "rateItemNameLocalization": "Hidden postage",
+            "rateItemType": "MANDATORY"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "SURCHARGE",
+            "rateItemNameLocalization": "EPH",
+            "rateItemType": "MANDATORY"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "DECLARED_VALUE",
+            "rateItemNameLocalization": "Declared value",
+            "rateItemType": "OPTIONAL"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 3.5
+            },
+            "rateItemID": "SIGNATURE_CONFIRMATION",
+            "rateItemNameLocalization": "Signature confirmation",
+            "rateItemType": "OPTIONAL"
+        },
+        {
+            "rateItemCharge": {
+                "unit": "USD",
+                "value": 0.0
+            },
+            "rateItemID": "DELIVERY_CONFIRMATION",
+            "rateItemNameLocalization": "Delivery confirmation",
+            "rateItemType": "INCLUDED"
+        }
+    ],
+    "requiresAdditionalInputs": false,
+    "serviceId": "USPS_PTP_GAL",
+    "serviceName": "USPS Ground Advantage (less than 1lb)",
+    "supportedDocumentSpecifications": [
+        {
+            "format": "PDF",
+            "printOptions": [
+                {
+                    "supportedDPIs": [],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "RECEIPT"
+                        },
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT"
+                    ]
+                },
+                {
+                    "supportedDPIs": [],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "PACKSLIP"
+                        },
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT"
+                    ]
+                },
+                {
+                    "supportedDPIs": [],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT",
+                        "RIGHT"
+                    ]
+                }
+            ],
+            "size": {
+                "length": 11.0,
+                "unit": "INCH",
+                "width": 8.5
+            }
+        },
+        {
+            "format": "PNG",
+            "printOptions": [
+                {
+                    "supportedDPIs": [],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT"
+                    ]
+                }
+            ],
+            "size": {
+                "length": 6.0,
+                "unit": "INCH",
+                "width": 4.0
+            }
+        },
+        {
+            "format": "PDF",
+            "printOptions": [
+                {
+                    "supportedDPIs": [],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "PACKSLIP"
+                        },
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT"
+                    ]
+                }
+            ],
+            "size": {
+                "length": 6.0,
+                "unit": "INCH",
+                "width": 4.0
+            }
+        },
+        {
+            "format": "ZPL",
+            "printOptions": [
+                {
+                    "supportedDPIs": [
+                        300
+                    ],
+                    "supportedDocumentDetails": [
+                        {
+                            "isMandatory": true,
+                            "name": "LABEL"
+                        }
+                    ],
+                    "supportedFileJoiningOptions": [
+                        true
+                    ],
+                    "supportedPageLayouts": [
+                        "LEFT"
+                    ]
+                }
+            ],
+            "size": {
+                "length": 6.0,
+                "unit": "INCH",
+                "width": 4.0
+            }
+        }
+    ],
+    "totalCharge": {
+        "unit": "USD",
+        "value": 3.96
+    }
+}
