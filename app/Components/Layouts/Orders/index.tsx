@@ -107,6 +107,9 @@ const Orders: React.FC = () => {
             <div className="text-[10px] font-semibold text-gray-400">
               Sales Channel: {data["SalesChannel"]}
             </div>
+            <div className="text-[10px] font-semibold text-gray-400">
+              Vendor: {data["vendorName"]}
+            </div>
           </>
         );
       },
