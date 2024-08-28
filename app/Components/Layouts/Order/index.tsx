@@ -33,14 +33,13 @@ const Order = () => {
     fetchOrderData(id);
   }, []);
 
-  const fetchOrderData = (id: string) => {
+  const fetchOrderData = async (id: string) => {
     setLoad(true);
     if (Object.keys(order).length == 0) {
-      getOrderByAPI({
+      await getOrderByAPI({
         id: id,
       }).then(async (x) => {
-        // await delay(3000)
-        setOrder(x.data.result);
+        await setOrder(x.data.result);
         setLoad(false);
       });
     }
@@ -75,10 +74,7 @@ const Order = () => {
         return (
           <>
             <div className="text-[12px] font-semibold text-gray-400">
-              Buyer Name
-            </div>
-            <div className="text-[12px] font-semibold text-gray-400">
-              {order.ShippingAddress?.Name || ""}
+              Buyer Name: {order.BuyerInfo?.Name || ""}
             </div>
             <div className="text-[12px] font-semibold text-gray-400">
               Sales Channel: {data["SalesChannel"]}
@@ -235,9 +231,9 @@ const Order = () => {
           </Row>
           <Row className="my-2">
             <Col span={12} className="px-1">
-              <div className={`${borderClass} h-[150px]`}>
+              <div className={`${borderClass}`}>
                 <div className="text-[18px] font-semibold">Order Summary</div>
-                <hr className="my-1" />
+                <hr className="my-2" />
                 <div className="text-[11px]  font-bold">
                   <Flex justify="space-between" gap={"20px"}>
                     <div className="w-3/4">
@@ -319,7 +315,7 @@ const Order = () => {
               </div>
             </Col>
             <Col span={12} className="px-1">
-              <div className={`${borderClass} h-[150px]`}>
+              <div className={`${borderClass}`}>
                 <div className="text-[18px] font-semibold">Ship to</div>
                 <hr className="my-1" />
                 {order.OrderStatus != "Pending" && (
@@ -327,24 +323,41 @@ const Order = () => {
                     <Flex justify="space-between" gap={"20px"}>
                       <div>
                         <div className="text-gray-400">
-                          {order?.BuyerInfo?.Name}
+                          {order?.BuyerInfo?.Name ??
+                            order?.BuyerInfo?.BuyerEmail}
                         </div>
                         <div className="text-gray-400">
-                          {order?.BuyerInfo?.AddressLine1}
-                          {", "}
-                          {order?.BuyerInfo?.City}
-                          {", "}
-                          {order?.BuyerInfo?.PostalCode}
+                          City:{" "}
+                          <span className="font-normal text-white">
+                            {order?.BuyerAddress?.City}
+                          </span>
+                          ,
                         </div>
                         <div className="text-gray-400">
-                          {order?.BuyerInfo?.CountryCode}{" "}
-                          {order?.BuyerInfo?.StateOrRegion}
+                          State/Region:{" "}
+                          <span className="font-normal text-white">
+                            {order?.BuyerAddress?.StateOrRegion}
+                          </span>
+                          ,
+                        </div>
+                        <div className="text-gray-400">
+                          Country Code:{" "}
+                          <span className="font-normal text-white">
+                            {order?.BuyerAddress?.CountryCode}
+                          </span>
+                          ,
+                        </div>
+                        <div className="text-gray-400">
+                          Postal Code:{" "}
+                          <span className="font-normal text-white">
+                            {order?.BuyerAddress?.PostalCode}
+                          </span>
+                          ,
                         </div>
                         <div className="mt-1">
-                          Address Type:
-                          <br />
+                          Address Type:{" "}
                           <span className="text-gray-400">
-                            {order?.BuyerInfo?.AddressType}
+                            {order?.BuyerAddress?.AddressType || "Nil"}
                           </span>
                         </div>
                       </div>
@@ -355,7 +368,7 @@ const Order = () => {
                           <Flex align="center">
                             <FaPhone />
                             <span className="mx-2">
-                              {order?.BuyerInfo?.Phone}
+                              {order?.BuyerInfo?.Phone || "Nil"}
                             </span>
                           </Flex>
                         </span>

@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Space, Table, Tag, Dropdown, Flex, Select, Button, Tabs } from "antd";
+import {
+  Space,
+  Table,
+  Tag,
+  Dropdown,
+  Flex,
+  Select,
+  Button,
+  Tabs,
+  Row,
+  Col,
+  Input,
+} from "antd";
 import type { TableProps } from "antd";
 import { useRouter } from "next/navigation";
 import { validateLogin } from "@/helpers/auth";
@@ -34,10 +46,153 @@ const Orders: React.FC = () => {
   const [userList, setUserList]: Array<any> = useState([]);
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("unshipped");
+  const [orderStatus, setOrderStatus] = useState("");
+  const [orderId, setOrderId] = useState("");
+  const [orderType, setOrderType] = useState("");
   const [userType, setUserType] = useState({
     type: "",
     User: "",
   });
+
+  useEffect(() => {
+    getInfo();
+    getOperationUsers({}).then((x) => {
+      setUserList(x?.data?.result || []);
+    });
+  }, []);
+
+  const getInfo = async () => {
+    setLoad(true);
+    let tempUser = {
+      type: "",
+      User: "",
+    };
+    const isLogin = await validateLogin(router);
+    if (!isLogin) {
+      userType.User == ""
+        ? (tempUser = await getUserInfo())
+        : (tempUser = { ...userType });
+
+      const orderData: any = await getOrders(
+        {},
+        orderId,
+        orderStatus,
+        orderType
+      );
+      if (tempUser.type != "admin") {
+        let tempOrders: Array<any> = [];
+        await orderData.data.result.forEach((x: any) => {
+          if (x.User == tempUser.User) {
+            tempOrders.push(x);
+          }
+        });
+        await setData(tempOrders);
+      } else {
+        console.log("orderData.data.result", orderData.data.result);
+        await setData(orderData.data.result);
+      }
+      tabChange("1");
+    }
+    setLoad(isLogin);
+  };
+
+  const getUserInfo = async () => {
+    const userInfo: string = (await Cookies.get("token")) || "";
+    let decoded: any = {};
+    if (userInfo) {
+      decoded = jwtDecode(userInfo);
+      setUserType({
+        User: decoded.username,
+        type: decoded.type,
+      });
+    }
+    return {
+      User: decoded.username,
+      type: decoded.type,
+    };
+  };
+
+  const handleUpload = (e: any) => {
+    e.preventDefault();
+    var files = e.target.files,
+      f = files[0];
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var data = e?.target?.result;
+      let readData = xlsx.read(data, { type: "binary" });
+      const wsName = readData.SheetNames[0];
+      const ws = readData.Sheets[wsName];
+
+      /* Convert array to json*/
+      const dataParse: any[] = xlsx.utils.sheet_to_json(ws, { header: 1 });
+      let tempData: Array<any> = [];
+      dataParse.forEach((x: any[], i: number) => {
+        if (i != 0) {
+          tempData.push({
+            "order-id": x[0],
+            "order-item-id": x[1],
+            "purchase-date": x[2],
+            "payments-date": x[3],
+            "buyer-email": x[4],
+            "buyer-name": x[5],
+            "payment-method-details": x[6],
+            cpf: x[7],
+            "buyer-phone-number": x[8],
+            sku: x[9],
+            "number-of-items": x[10],
+            "product-name": x[11],
+            "quantity-purchased": x[12],
+            currency: x[13],
+            "item-price": x[14],
+            "item-tax": x[15],
+            "shipping-price": x[16],
+            "shipping-tax": x[17],
+            "ship-service-level": x[18],
+            "recipient-name": x[19],
+            "ship-address-1": x[20],
+            "ship-address-2": x[21],
+            "ship-address-3": x[22],
+            "ship-city": x[23],
+            "ship-state": x[24],
+            "ship-postal-code": x[25],
+            "ship-country": x[26],
+            "ship-phone-number": x[27],
+            "item-promotion-discount": x[28],
+            "item-promotion-id": x[29],
+            "ship-promotion-discount": x[30],
+            "ship-promotion-id": x[31],
+            "delivery-start-date": x[32],
+            "delivery-end-date": x[33],
+            "delivery-time-zone": x[34],
+            "delivery-Instructions": x[35],
+            "earliest-ship-date": x[36],
+            "latest-ship-date": x[37],
+            "earliest-delivery-date": x[38],
+            "latest-delivery-date": x[39],
+            "is-business-order": x[40],
+            "purchase-order-number": x[41],
+            "price-designation": x[42],
+            "is-prime": x[43],
+            "signature-confirmation-recommended": x[44],
+          });
+        }
+      });
+      setData(tempData);
+    };
+    reader.readAsBinaryString(f);
+  };
+
+  const checkItems = (orderData: any) => {
+    let temp = [...checkedOrders];
+    if (orderData.value == true) {
+      temp.push(orderData.id);
+    } else {
+      temp = temp.filter((x) => {
+        return x != orderData.id;
+      });
+    }
+    setCheckedOrders(temp);
+  };
 
   const columns: TableProps<DataType>["columns"] = [
     {
@@ -69,6 +224,21 @@ const Orders: React.FC = () => {
       title: "Dated", //<><input type='checkbox' /></>,
       key: "Order Date",
       width: 90,
+      filters: [
+        {
+          text: "Date",
+          value: "Date",
+          children: data?.map((dt: any) => {
+            return {
+              text: dt?.PurchaseDate,
+              value: dt?.PurchaseDate,
+            };
+          }),
+        },
+      ],
+      filterMode: "tree",
+      filterSearch: true,
+      // onFilter: (value, record) => record.PurchaseDate.includes(value as string),
       render: (data) => {
         return (
           <>
@@ -99,16 +269,22 @@ const Orders: React.FC = () => {
               {data["AmazonOrderId"]}
             </Link>
             <div className="text-[10px] font-semibold text-gray-400">
-              Buyer Name
+              {data["BuyerInfo"]?.Name ? "Buyer Name:" : "Buyer Email:"}
+            </div>
+            <div className="text-[10px] font-semibold">
+              {data["BuyerInfo"]?.Name ?? data["BuyerInfo"]?.BuyerEmail ?? ""}
             </div>
             <div className="text-[10px] font-semibold text-gray-400">
-              {data["BuyerInfo"]?.Name || ""}
+              Sales Channel:
+            </div>
+            <div className="text-[10px] font-semibold">
+              {data["SalesChannel"]}
             </div>
             <div className="text-[10px] font-semibold text-gray-400">
-              Sales Channel: {data["SalesChannel"]}
+              Vendor:
             </div>
-            <div className="text-[10px] font-semibold text-gray-400">
-              Vendor: {data["vendorName"]}
+            <div className="text-[10px] font-semibold">
+              {data["vendorName"]}
             </div>
           </>
         );
@@ -298,140 +474,6 @@ const Orders: React.FC = () => {
     },
   ];
 
-  const checkItems = (orderData: any) => {
-    let temp = [...checkedOrders];
-    if (orderData.value == true) {
-      temp.push(orderData.id);
-    } else {
-      temp = temp.filter((x) => {
-        return x != orderData.id;
-      });
-    }
-    setCheckedOrders(temp);
-  };
-
-  const getUserInfo = async () => {
-    const userInfo: string = (await Cookies.get("token")) || "";
-    let decoded: any = {};
-    if (userInfo) {
-      decoded = jwtDecode(userInfo);
-      setUserType({
-        User: decoded.username,
-        type: decoded.type,
-      });
-    }
-    return {
-      User: decoded.username,
-      type: decoded.type,
-    };
-  };
-
-  const getInfo = async () => {
-    setLoad(true);
-    let tempUser = {
-      type: "",
-      User: "",
-    };
-    const isLogin = await validateLogin(router);
-    if (!isLogin) {
-      userType.User == ""
-        ? (tempUser = await getUserInfo())
-        : (tempUser = { ...userType });
-
-      const orderData: any = await getOrders({});
-      if (tempUser.type != "admin") {
-        let tempOrders: Array<any> = [];
-        orderData.data.result.forEach((x: any) => {
-          if (x.User == tempUser.User) {
-            tempOrders.push(x);
-          }
-        });
-        setData(tempOrders);
-      } else {
-        console.log("orderData.data.result", orderData.data.result);
-        setData(orderData.data.result);
-      }
-    }
-    setLoad(isLogin);
-  };
-
-  useEffect(() => {
-    getInfo();
-    getOperationUsers({}).then((x) => {
-      setUserList(x?.data?.result || []);
-    });
-  }, []);
-
-  const handleUpload = (e: any) => {
-    e.preventDefault();
-    var files = e.target.files,
-      f = files[0];
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      var data = e?.target?.result;
-      let readData = xlsx.read(data, { type: "binary" });
-      const wsName = readData.SheetNames[0];
-      const ws = readData.Sheets[wsName];
-
-      /* Convert array to json*/
-      const dataParse: any[] = xlsx.utils.sheet_to_json(ws, { header: 1 });
-      let tempData: Array<any> = [];
-      dataParse.forEach((x: any[], i: number) => {
-        if (i != 0) {
-          tempData.push({
-            "order-id": x[0],
-            "order-item-id": x[1],
-            "purchase-date": x[2],
-            "payments-date": x[3],
-            "buyer-email": x[4],
-            "buyer-name": x[5],
-            "payment-method-details": x[6],
-            cpf: x[7],
-            "buyer-phone-number": x[8],
-            sku: x[9],
-            "number-of-items": x[10],
-            "product-name": x[11],
-            "quantity-purchased": x[12],
-            currency: x[13],
-            "item-price": x[14],
-            "item-tax": x[15],
-            "shipping-price": x[16],
-            "shipping-tax": x[17],
-            "ship-service-level": x[18],
-            "recipient-name": x[19],
-            "ship-address-1": x[20],
-            "ship-address-2": x[21],
-            "ship-address-3": x[22],
-            "ship-city": x[23],
-            "ship-state": x[24],
-            "ship-postal-code": x[25],
-            "ship-country": x[26],
-            "ship-phone-number": x[27],
-            "item-promotion-discount": x[28],
-            "item-promotion-id": x[29],
-            "ship-promotion-discount": x[30],
-            "ship-promotion-id": x[31],
-            "delivery-start-date": x[32],
-            "delivery-end-date": x[33],
-            "delivery-time-zone": x[34],
-            "delivery-Instructions": x[35],
-            "earliest-ship-date": x[36],
-            "latest-ship-date": x[37],
-            "earliest-delivery-date": x[38],
-            "latest-delivery-date": x[39],
-            "is-business-order": x[40],
-            "purchase-order-number": x[41],
-            "price-designation": x[42],
-            "is-prime": x[43],
-            "signature-confirmation-recommended": x[44],
-          });
-        }
-      });
-      setData(tempData);
-    };
-    reader.readAsBinaryString(f);
-  };
-
   const items = [
     {
       label: (
@@ -517,6 +559,35 @@ const Orders: React.FC = () => {
 
   return (
     <>
+      <Row gutter={16} style={{ marginTop: 16, marginBottom: 16 }}>
+        <Col span={6}>
+          <Input
+            placeholder="Order ID"
+            value={orderId}
+            onChange={(e) => setOrderId(e.target.value)}
+          />
+        </Col>
+        <Col span={6}>
+          <Input
+            placeholder="Order Status"
+            value={orderStatus}
+            onChange={(e) => setOrderStatus(e.target.value)}
+          />
+        </Col>
+        <Col span={6}>
+          <Input
+            placeholder="Order Type"
+            value={orderType}
+            onChange={(e) => setOrderType(e.target.value)}
+          />
+        </Col>
+        <Col span={6}>
+          <Button type="primary" onClick={getInfo} disabled={load}>
+            Filter
+          </Button>
+        </Col>
+      </Row>
+
       {load && <Spinner />}
       {!load && (
         <>
@@ -534,9 +605,7 @@ const Orders: React.FC = () => {
                 <Select
                   defaultValue={null}
                   placeholder="Select User"
-                  style={{
-                    width: 150,
-                  }}
+                  style={{ width: 150 }}
                   value={user}
                   onChange={handleChange}
                   options={userList.map((x: any) => {
@@ -553,6 +622,7 @@ const Orders: React.FC = () => {
               )}
             </div>
           </Flex>
+
           <Tabs defaultActiveKey="1" items={tabItems} onChange={tabChange} />
         </>
       )}
