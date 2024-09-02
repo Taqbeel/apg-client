@@ -5,10 +5,11 @@ export const getOrders = (
   params: object,
   orderId: string,
   orderStatus: string,
-  orderType: string
+  orderType: string,
+  vendorName: string
 ) => {
   return axios.get(
-    `${url}/getOrders?orderId=${orderId}&orderStatus=${orderStatus}&orderType=${orderType}`,
+    `${url}/getOrders?orderId=${orderId}&orderStatus=${orderStatus}&orderType=${orderType}&vendorName=${vendorName}`,
     {
       headers: {
         ...params,
