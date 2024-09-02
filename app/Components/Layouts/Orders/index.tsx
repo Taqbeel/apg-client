@@ -47,6 +47,7 @@ const Orders: React.FC = () => {
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("unshipped");
   const [orderStatus, setOrderStatus] = useState("");
+  const [vendor, setVendor] = useState("");
   const [orderId, setOrderId] = useState("");
   const [orderType, setOrderType] = useState("");
   const [userType, setUserType] = useState({
@@ -77,7 +78,8 @@ const Orders: React.FC = () => {
         {},
         orderId,
         orderStatus,
-        orderType
+        orderType,
+        vendor
       );
       if (tempUser.type != "admin") {
         let tempOrders: Array<any> = [];
@@ -269,10 +271,11 @@ const Orders: React.FC = () => {
               {data["AmazonOrderId"]}
             </Link>
             <div className="text-[10px] font-semibold text-gray-400">
-              {data["BuyerInfo"]?.Name ? "Buyer Name:" : "Buyer Email:"}
+              {data["BuyerAddress"]?.Name ? "Buyer Name:" : "Buyer Email:"}
             </div>
             <div className="text-[10px] font-semibold">
-              {data["BuyerInfo"]?.Name ?? data["BuyerInfo"]?.BuyerEmail ?? ""}
+              {(data["BuyerAddress"]?.Name || data["BuyerInfo"]?.BuyerEmail) ??
+                ""}
             </div>
             <div className="text-[10px] font-semibold text-gray-400">
               Sales Channel:
@@ -560,29 +563,41 @@ const Orders: React.FC = () => {
   return (
     <>
       <Row gutter={16} style={{ marginTop: 16, marginBottom: 16 }}>
-        <Col span={6}>
+        <Col span={5}>
           <Input
             placeholder="Order ID"
             value={orderId}
             onChange={(e) => setOrderId(e.target.value)}
           />
         </Col>
-        <Col span={6}>
+        <Col span={5}>
+          <Input
+            placeholder="Vendor"
+            value={vendor}
+            onChange={(e) => setVendor(e.target.value)}
+          />
+        </Col>
+        <Col span={5}>
           <Input
             placeholder="Order Status"
             value={orderStatus}
             onChange={(e) => setOrderStatus(e.target.value)}
           />
         </Col>
-        <Col span={6}>
+        <Col span={5}>
           <Input
             placeholder="Order Type"
             value={orderType}
             onChange={(e) => setOrderType(e.target.value)}
           />
         </Col>
-        <Col span={6}>
-          <Button type="primary" onClick={getInfo} disabled={load}>
+        <Col span={4}>
+          <Button
+            type="primary"
+            onClick={getInfo}
+            disabled={load}
+            style={{ width: "100%" }}
+          >
             Filter
           </Button>
         </Col>
