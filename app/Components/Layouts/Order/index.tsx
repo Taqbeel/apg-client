@@ -74,10 +74,17 @@ const Order = () => {
         return (
           <>
             <div className="text-[12px] font-semibold text-gray-400">
-              Buyer Name: {order.BuyerInfo?.Name || ""}
+              {data["BuyerAddress"]?.Name ? "Buyer Name:" : "Buyer Email:"}
+            </div>
+            <div className="text-[12px] font-semibold text-white">
+              {(data["BuyerAddress"]?.Name || data["BuyerInfo"]?.BuyerEmail) ??
+                ""}
             </div>
             <div className="text-[12px] font-semibold text-gray-400">
-              Sales Channel: {data["SalesChannel"]}
+              Sales Channel:
+            </div>
+            <div className="text-[12px] font-semibold text-white">
+              {data["SalesChannel"]}
             </div>
           </>
         );
@@ -323,8 +330,11 @@ const Order = () => {
                     <Flex justify="space-between" gap={"20px"}>
                       <div>
                         <div className="text-gray-400">
-                          {order?.BuyerInfo?.Name ??
-                            order?.BuyerInfo?.BuyerEmail}
+                          Address Line 1:{" "}
+                          <span className="font-normal text-white">
+                            {order?.BuyerAddress?.AddressLine1}
+                          </span>
+                          ,
                         </div>
                         <div className="text-gray-400">
                           City:{" "}
@@ -354,6 +364,7 @@ const Order = () => {
                           </span>
                           ,
                         </div>
+                        <br />
                         <div className="mt-1">
                           Address Type:{" "}
                           <span className="text-gray-400">
@@ -362,13 +373,18 @@ const Order = () => {
                         </div>
                       </div>
                       <div>
+                        <div className="text-white text-sm">
+                          {order?.BuyerAddress?.Name ||
+                            order?.BuyerInfo?.BuyerEmail}
+                        </div>
+                        <br />
                         Buyer Contact
                         <br />
                         <span className="text-gray-400">
                           <Flex align="center">
                             <FaPhone />
                             <span className="mx-2">
-                              {order?.BuyerInfo?.Phone || "Nil"}
+                              {order?.BuyerAddress?.Phone || "Nil"}
                             </span>
                           </Flex>
                         </span>
