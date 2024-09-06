@@ -45,3 +45,7 @@ export const getOrderByAPI = (params: object) => {
     },
   });
 };
+
+export const orderToProcess = (payload: object) => {
+  return axios.post(`${url}/orderToProcess`, payload);
+};
