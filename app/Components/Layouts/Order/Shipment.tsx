@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { getOrderByAPI } from "@/api/orders";
-import { getRates, purchaseShipment, getLabel } from "@/api/shipment";
-import { Col, Row, Flex, Select, Spin, InputNumber, Modal } from "antd";
+import { getOrderByAPI, orderToProcess } from "@/api/orders";
+import { getLabel, getRates, purchaseShipment } from "@/api/shipment";
 import { LoadingOutlined } from "@ant-design/icons";
-import { FaShippingFast, FaFileDownload } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { Col, Flex, InputNumber, Modal, Row, Select, Spin } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FaShippingFast } from "react-icons/fa";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import openNotification from "../../Shared/Notification";
 import { CiCircleCheck } from "react-icons/ci";
+import openNotification from "../../Shared/Notification";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -169,7 +168,7 @@ const Shipment = () => {
             },
           ],
           packageClientReferenceId:
-            order?.BuyerInfo?.Name || `AMAZON${order.AmazonOrderId}`,
+            order.BuyerAddress?.Name || `AMAZON${order.AmazonOrderId}`,
           items: items,
         },
       ],
@@ -185,6 +184,8 @@ const Shipment = () => {
       vendorName: order?.DefaultShipFromLocationAddress?.Name,
       body,
     };
+
+    console.log("body", body);
 
     if (
       (weight < totalWeight && oz === 0) ||
@@ -231,18 +232,24 @@ const Shipment = () => {
 
   const confirmShipment = () => {
     let tempRate: any = rates.rates.filter((x: any) => x.isCheck == true)[0];
-    console.log(tempRate);
+    console.log("tempRate", tempRate);
     let formatType: any = tempRate.supportedDocumentSpecifications.filter(
       (x: any) => x.format == "PDF" || x.format == "PNG"
+      // (x: any) => x.format == "PNG"
     )[0];
+    console.log("formatType", formatType);
+
     const payload = {
+      vendorName: order?.DefaultShipFromLocationAddress?.Name,
       body: {
         requestToken: rates?.requestToken,
         rateId: tempRate?.rateId,
         requestedDocumentSpecification: {
           format: formatType.format,
           size: formatType.size,
+          dpi: formatType?.printOptions[0]?.supportedDPIs[0],
           pageLayout: formatType?.printOptions[0]?.supportedPageLayouts[0],
+          // pageLayout: ["DEFAULT"],
           needFileJoining:
             formatType?.printOptions[0]?.supportedFileJoiningOptions[0],
           requestedDocumentTypes:
@@ -253,21 +260,24 @@ const Shipment = () => {
             ),
         },
         requestedValueAddedServices:
-          tempRate.availableValueAddedServiceGroups.map((x: any) => {
-            return { id: x.groupId };
-          }),
+          tempRate.availableValueAddedServiceGroups.flatMap((item: any) =>
+            item.valueAddedServices.map((service: any) => ({ id: service.id }))
+          ),
       }, //[{id:'DELIVERY_CONFIRMATION'}]
       OrderId: order.id,
     };
-    console.log(payload.body);
-    // purchaseShipment(payload).then((res:any) => {
-    //   console.log(res)
-    //   if(res.data.status=="success"){
-    //     openNotification("Success", "Shipment bought successfully!", "green");
-    //     router.refresh()
-    //     // console.log(JSON.parse(res.data.result));
-    //   }
-    // });
+    console.log("payload.body", payload.body);
+    purchaseShipment(payload).then(async (res: any) => {
+      console.log("data", res.data);
+      if (res.data.status == "success") {
+        openNotification("Success", "Shipment bought successfully!", "green");
+
+        await orderToProcess({ id: order.id });
+
+        router.refresh();
+        // console.log(JSON.parse(res.data.result));
+      }
+    });
   };
 
   const downloadLabel = () => {
@@ -276,22 +286,26 @@ const Shipment = () => {
     // };
     getLabel({
       id: order.id,
-    }).then((x: any) => {
-      if (x.data.status == "success") {
-        // openInNewTab(`data:application/pdf;base64,${x.data.result.document}`)
-        console.log(x.data.result.format);
-        let type = "";
-        if (x.data.result.format == "PNG") {
-          type = "image";
-        } else {
-          type = "application";
+    })
+      .then((x: any) => {
+        if (x.data.status == "success") {
+          // openInNewTab(`data:application/pdf;base64,${x.data.result.document}`)
+          console.log(x.data.result.format);
+          let type = "";
+          if (x.data.result.format == "PNG") {
+            type = "image";
+          } else {
+            type = "application";
+          }
+          setDocument(
+            `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
+          );
+          setIsModalOpen(true);
         }
-        setDocument(
-          `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
-        );
-        setIsModalOpen(true);
-      }
-    });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -437,7 +451,7 @@ const Shipment = () => {
             </Col>
             <Col className="mx-2">
               <br />
-              {order.shipmentBought && (
+              {/* {order.shipmentBought && (
                 <button
                   className="shipment-btn text-[14px]"
                   onClick={downloadLabel}
@@ -445,7 +459,7 @@ const Shipment = () => {
                   <FaFileDownload />
                   <div>Download Label</div>
                 </button>
-              )}
+              )} */}
             </Col>
           </Row>
 
@@ -555,7 +569,7 @@ const Shipment = () => {
       )}
       {load && <Spin />}
       <Modal
-        title="Basic Modal"
+        // title="Basic Modal"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -563,9 +577,14 @@ const Shipment = () => {
         footer={false}
         width={540}
       >
-        <h1>Hello</h1>
         <div className="center">
-          <embed src={document} height={500} width={500} />
+          {/* <embed src={document} height={500} width={500} /> */}
+          <iframe
+            src={document}
+            height={500}
+            width={500}
+            style={{ border: "none" }}
+          />
         </div>
       </Modal>
     </>
