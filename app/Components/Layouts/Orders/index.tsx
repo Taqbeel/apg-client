@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Space,
   Table,
@@ -13,6 +13,7 @@ import {
   Row,
   Col,
   Input,
+  Modal,
 } from "antd";
 import type { TableProps } from "antd";
 import { useRouter } from "next/navigation";
@@ -22,12 +23,15 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import * as xlsx from "xlsx";
 import { RxUpdate } from "react-icons/rx";
-import { FaUserCheck, FaUserSlash } from "react-icons/fa";
+import { FaFileDownload, FaUserCheck, FaUserSlash } from "react-icons/fa";
 import { getOrders, assignOrder } from "@/api/orders";
 import { getOperationUsers } from "@/api/users";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import { getLabel } from "@/api/shipment";
+import { useReactToPrint } from "react-to-print";
+
 dayjs.extend(relativeTime);
 
 interface DataType {
@@ -39,36 +43,49 @@ interface DataType {
 }
 
 const Orders: React.FC = () => {
+  const contentToPrint = useRef(null);
   const router = useRouter();
+
   const [load, setLoad] = useState(false);
   const [data, setData]: Array<any> = useState([]);
   const [checkedOrders, setCheckedOrders]: Array<any> = useState([]);
   const [userList, setUserList]: Array<any> = useState([]);
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("unshipped");
-  const [orderStatus, setOrderStatus] = useState("");
+  const [orderStatus, setOrderStatus] = useState("Unshipped");
   const [vendor, setVendor] = useState("");
   const [orderId, setOrderId] = useState("");
   const [orderType, setOrderType] = useState("");
+  const [key, setKey] = useState("1");
+  const [document, setDocument]: any = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userType, setUserType] = useState({
     type: "",
     User: "",
   });
 
   useEffect(() => {
-    getInfo();
+    setLoad(true);
+    getInfo(key);
+    setLoad(false);
+  }, [key]);
+
+  useEffect(() => {
     getOperationUsers({}).then((x) => {
       setUserList(x?.data?.result || []);
     });
   }, []);
 
-  const getInfo = async () => {
-    setLoad(true);
+  const handleOk = () => setIsModalOpen(false);
+  const handleCancel = () => setIsModalOpen(false);
+
+  const getInfo = async (key: string) => {
     let tempUser = {
       type: "",
       User: "",
     };
     const isLogin = await validateLogin(router);
+    console.log("isLogin", isLogin);
     if (!isLogin) {
       userType.User == ""
         ? (tempUser = await getUserInfo())
@@ -93,9 +110,8 @@ const Orders: React.FC = () => {
         console.log("orderData.data.result", orderData.data.result);
         await setData(orderData.data.result);
       }
-      tabChange("1");
+      tabChange(key || "1");
     }
-    setLoad(isLogin);
   };
 
   const getUserInfo = async () => {
@@ -195,6 +211,39 @@ const Orders: React.FC = () => {
     }
     setCheckedOrders(temp);
   };
+
+  const downloadLabel = (id: string) => {
+    // const openInNewTab = (url:string) => {
+    //   window.open(url, "_blank", "noreferrer");
+    // };
+    getLabel({ id })
+      .then((x: any) => {
+        if (x.data.status == "success") {
+          // openInNewTab(`data:application/pdf;base64,${x.data.result.document}`)
+          console.log(x.data.result);
+          let type = "";
+          if (x.data.result.format == "PNG") {
+            type = "image";
+          } else {
+            type = "application";
+          }
+          setDocument(
+            `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
+          );
+          setIsModalOpen(true);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handlePrint = useReactToPrint({
+    documentTitle: "Print This Document",
+    onBeforePrint: () => console.log("before printing..."),
+    onAfterPrint: () => console.log("after printing..."),
+    removeAfterPrint: true,
+  });
 
   const columns: TableProps<DataType>["columns"] = [
     {
@@ -392,8 +441,8 @@ const Orders: React.FC = () => {
                 data.OrderStatus == "Pending"
                   ? "#f50"
                   : data.OrderStatus == "Unshipped"
-                  ? "#2db7f5"
-                  : "green"
+                    ? "#2db7f5"
+                    : "green"
               }
             >
               <div className="text-[10px]">{data.OrderStatus}</div>
@@ -429,8 +478,8 @@ const Orders: React.FC = () => {
         status != "transit" && status != "delivered"
           ? "Actions"
           : status == "transit"
-          ? "Tracking"
-          : "-",
+            ? "Tracking"
+            : "-",
       key: "user",
       render: (data) => {
         return (
@@ -438,13 +487,25 @@ const Orders: React.FC = () => {
             {status != "transit" && status != "delivered" && (
               <>
                 <div className="shipment-btn text-[11px]">
-                  <Link
-                    href={`/dashboard/shipment?id=${data["AmazonOrderId"]}`}
-                  >
-                    <span className="no-underline text-white">
-                      Buy Shipping
-                    </span>
-                  </Link>
+                  {orderStatus === "Inprocess" ? (
+                    <div>
+                      <button
+                        className="shipment-btn text-[14px]"
+                        onClick={() => downloadLabel(data?.id)}
+                      >
+                        <FaFileDownload />
+                        <div>Print Label</div>
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/dashboard/shipment?id=${data["AmazonOrderId"]}`}
+                    >
+                      <span className="no-underline text-white">
+                        Buy Shipping
+                      </span>
+                    </Link>
+                  )}
                 </div>
               </>
             )}
@@ -506,7 +567,7 @@ const Orders: React.FC = () => {
     assignOrder(payload).then((x) => {
       if (x.status == 200) {
         setCheckedOrders([]);
-        getInfo();
+        getInfo(key);
       }
     });
   };
@@ -515,12 +576,17 @@ const Orders: React.FC = () => {
     let tempStatus = "";
     key == "1"
       ? (tempStatus = "Unshipped")
-      : key == "3"
-      ? (tempStatus = "Shipped")
-      : key == "4"
-      ? (tempStatus = "transit")
-      : (tempStatus = "delivered");
+      : key == "2"
+        ? (tempStatus = "Inprocess")
+        : key == "3"
+          ? (tempStatus = "Shipped")
+          : key == "4"
+            ? (tempStatus = "Transit")
+            : (tempStatus = "Delivered");
+
     setStatus(tempStatus);
+    setOrderStatus(tempStatus);
+    setKey(key);
   };
 
   const TableComponent = () => (
@@ -563,38 +629,38 @@ const Orders: React.FC = () => {
   return (
     <>
       <Row gutter={16} style={{ marginTop: 16, marginBottom: 16 }}>
-        <Col span={5}>
+        <Col span={6}>
           <Input
             placeholder="Order ID"
             value={orderId}
             onChange={(e) => setOrderId(e.target.value)}
           />
         </Col>
-        <Col span={5}>
+        <Col span={6}>
           <Input
             placeholder="Vendor"
             value={vendor}
             onChange={(e) => setVendor(e.target.value)}
           />
         </Col>
-        <Col span={5}>
+        {/* <Col span={5}>
           <Input
             placeholder="Order Status"
             value={orderStatus}
             onChange={(e) => setOrderStatus(e.target.value)}
           />
-        </Col>
-        <Col span={5}>
+        </Col> */}
+        <Col span={6}>
           <Input
             placeholder="Order Type"
             value={orderType}
             onChange={(e) => setOrderType(e.target.value)}
           />
         </Col>
-        <Col span={4}>
+        <Col span={6}>
           <Button
             type="primary"
-            onClick={getInfo}
+            onClick={() => getInfo(key)}
             disabled={load}
             style={{ width: "100%" }}
           >
@@ -638,9 +704,38 @@ const Orders: React.FC = () => {
             </div>
           </Flex>
 
-          <Tabs defaultActiveKey="1" items={tabItems} onChange={tabChange} />
+          <Tabs defaultActiveKey={key} items={tabItems} onChange={tabChange} />
         </>
       )}
+
+      <Modal
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        centered
+        footer={false}
+        className="p-4"
+        width={600}
+      >
+        <div className="flex flex-col items-center p-4">
+          <div className="w-full max-w-full overflow-hidden">
+            <iframe
+              ref={contentToPrint}
+              src={document}
+              height="500"
+              className="w-full flex justify-center items-center"
+            />
+          </div>
+          <div className="flex justify-center mt-4 w-full">
+            <Button
+              className="w-full bg-green-400"
+              onClick={() => handlePrint(null, () => contentToPrint.current)}
+            >
+              Print
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
