@@ -6,10 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "ts:dev": "toolpad-studio dev ./my-toolpad-app",
-    "ts:build": "toolpad-studio build ./my-toolpad-app",
-    "ts:start": "toolpad-studio start ./my-toolpad-app"
+    "lint": "next lint"
   },
   "dependencies": {
     "@ag-grid-community/client-side-row-model": "^32.0.1",
@@ -18,7 +15,6 @@
     "@ag-grid-enterprise/menu": "^32.0.1",
     "@ag-grid-enterprise/set-filter": "^32.0.1",
     "@ant-design/nextjs-registry": "^1.0.0",
-    "@toolpad/studio": "^0.5.2",
     "ag-grid-enterprise": "^32.0.1",
     "ag-grid-react": "^32.0.1",
     "antd": "^5.16.5",
