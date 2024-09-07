@@ -1,6 +1,6 @@
 "use client";
 
-import { getOrderByAPI, orderToProcess } from "@/api/orders";
+import { getOrderByAPI, orderStatusChange } from "@/api/orders";
 import { getLabel, getRates, purchaseShipment } from "@/api/shipment";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Col, Flex, InputNumber, Modal, Row, Select, Spin } from "antd";
@@ -272,7 +272,7 @@ const Shipment = () => {
       if (res.data.status == "success") {
         openNotification("Success", "Shipment bought successfully!", "green");
 
-        await orderToProcess({ id: order.id });
+        await orderStatusChange({ id: order.id, status: 'Inprocess' });
 
         router.refresh();
         // console.log(JSON.parse(res.data.result));

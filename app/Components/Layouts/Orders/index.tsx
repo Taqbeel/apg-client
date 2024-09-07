@@ -1,36 +1,36 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { assignOrder, getOrders, orderStatusChange } from "@/api/orders";
+import { getLabel } from "@/api/shipment";
+import { getOperationUsers } from "@/api/users";
+import Spinner from "@/app/Components/Shared/Spinner";
+import { validateLogin } from "@/helpers/auth";
+import type { TableProps } from "antd";
 import {
-  Space,
-  Table,
-  Tag,
+  Button,
+  Col,
   Dropdown,
   Flex,
-  Select,
-  Button,
-  Tabs,
-  Row,
-  Col,
   Input,
   Modal,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tabs,
+  Tag,
 } from "antd";
-import type { TableProps } from "antd";
-import { useRouter } from "next/navigation";
-import { validateLogin } from "@/helpers/auth";
-import Spinner from "@/app/Components/Shared/Spinner";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import * as xlsx from "xlsx";
-import { RxUpdate } from "react-icons/rx";
-import { FaFileDownload, FaUserCheck, FaUserSlash } from "react-icons/fa";
-import { getOrders, assignOrder } from "@/api/orders";
-import { getOperationUsers } from "@/api/users";
-import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
-import { getLabel } from "@/api/shipment";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { FaFileDownload, FaUserCheck, FaUserSlash } from "react-icons/fa";
+import { RxUpdate } from "react-icons/rx";
 import { useReactToPrint } from "react-to-print";
+import * as xlsx from "xlsx";
 
 dayjs.extend(relativeTime);
 
@@ -59,6 +59,7 @@ const Orders: React.FC = () => {
   const [key, setKey] = useState("1");
   const [document, setDocument]: any = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState("");
   const [userType, setUserType] = useState({
     type: "",
     User: "",
@@ -230,6 +231,7 @@ const Orders: React.FC = () => {
           setDocument(
             `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
           );
+          setSelectedOrderId(id);
           setIsModalOpen(true);
         }
       })
@@ -244,6 +246,11 @@ const Orders: React.FC = () => {
     onAfterPrint: () => console.log("after printing..."),
     removeAfterPrint: true,
   });
+
+  const print = async () => {
+    await orderStatusChange({ id: selectedOrderId, status: "Shipped" });
+    handlePrint(null, () => contentToPrint.current);
+  };
 
   const columns: TableProps<DataType>["columns"] = [
     {
@@ -441,8 +448,8 @@ const Orders: React.FC = () => {
                 data.OrderStatus == "Pending"
                   ? "#f50"
                   : data.OrderStatus == "Unshipped"
-                    ? "#2db7f5"
-                    : "green"
+                  ? "#2db7f5"
+                  : "green"
               }
             >
               <div className="text-[10px]">{data.OrderStatus}</div>
@@ -478,8 +485,8 @@ const Orders: React.FC = () => {
         status != "transit" && status != "delivered"
           ? "Actions"
           : status == "transit"
-            ? "Tracking"
-            : "-",
+          ? "Tracking"
+          : "-",
       key: "user",
       render: (data) => {
         return (
@@ -577,12 +584,12 @@ const Orders: React.FC = () => {
     key == "1"
       ? (tempStatus = "Unshipped")
       : key == "2"
-        ? (tempStatus = "Inprocess")
-        : key == "3"
-          ? (tempStatus = "Shipped")
-          : key == "4"
-            ? (tempStatus = "Transit")
-            : (tempStatus = "Delivered");
+      ? (tempStatus = "Inprocess")
+      : key == "3"
+      ? (tempStatus = "Shipped")
+      : key == "4"
+      ? (tempStatus = "Transit")
+      : (tempStatus = "Delivered");
 
     setStatus(tempStatus);
     setOrderStatus(tempStatus);
@@ -727,10 +734,7 @@ const Orders: React.FC = () => {
             />
           </div>
           <div className="flex justify-center mt-4 w-full">
-            <Button
-              className="w-full bg-green-400"
-              onClick={() => handlePrint(null, () => contentToPrint.current)}
-            >
+            <Button className="w-full bg-green-400" onClick={print}>
               Print
             </Button>
           </div>
