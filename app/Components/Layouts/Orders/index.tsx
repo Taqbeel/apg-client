@@ -60,6 +60,7 @@ const Orders: React.FC = () => {
   const [document, setDocument]: any = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [fileFormat, setFileFormat] = useState("");
   const [userType, setUserType] = useState({
     type: "",
     User: "",
@@ -232,6 +233,7 @@ const Orders: React.FC = () => {
             `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
           );
           setSelectedOrderId(id);
+          setFileFormat(x.data.result.format);
           setIsModalOpen(true);
         }
       })
@@ -387,20 +389,38 @@ const Orders: React.FC = () => {
                         </a>
                       </div>
                       <div
-                        className="text-[10px] text-gray-500 my-1"
+                        className="text-[10px] text-gray-500"
                         style={{ lineHeight: 1.1 }}
                       >
                         SKU:
                         <span className="font-semibold"> {item.SellerSKU}</span>
                       </div>
                       <div
-                        className="text-[10px] text-gray-500"
+                        className="text-[10px] text-gray-500 mt-1"
                         style={{ lineHeight: 1.1 }}
                       >
                         Quantity:
                         <span className="font-semibold">
                           {" "}
                           {item.QuantityOrdered}
+                        </span>
+                      </div>
+                      <div
+                        className="text-[10px] text-gray-500 mt-2"
+                        style={{ lineHeight: 1.1 }}
+                      >
+                        Place:
+                        <span
+                          className={`font-semibold text-sm ${
+                            item.SellerSKU?.includes("BULK")
+                              ? "text-green-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {" "}
+                          {item.SellerSKU?.includes("BULK")
+                            ? "In House"
+                            : "Vendor"}
                         </span>
                       </div>
                     </div>
@@ -735,7 +755,7 @@ const Orders: React.FC = () => {
           </div>
           <div className="flex justify-center mt-4 w-full">
             <Button className="w-full bg-green-400" onClick={print}>
-              Print
+              {fileFormat === "PNG" ? "Print" : "Shipped?"}
             </Button>
           </div>
         </div>
