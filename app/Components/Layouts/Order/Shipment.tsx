@@ -33,6 +33,7 @@ const Shipment = () => {
   const [weight, setWeight] = useState(0);
   const [oz, setOz] = useState(0);
   const [error, setError] = useState("");
+  const [purchaseError, setPurchaseError] = useState("");
   const [dimension, setDimension] = useState({
     length: 1.0,
     width: 1.0,
@@ -57,6 +58,7 @@ const Shipment = () => {
         id: id,
       }).then(async (x) => {
         let temp = { ...x.data.result };
+        console.log("This Order", temp);
         temp?.OrderItems?.forEach((x: any) => {
           x.qty = x.QuantityOrdered;
         });
@@ -88,6 +90,7 @@ const Shipment = () => {
   };
 
   const fetchRates = () => {
+    setPurchaseError("");
     setError("");
 
     let totalWeight = 0;
@@ -231,6 +234,7 @@ const Shipment = () => {
   };
 
   const confirmShipment = () => {
+    setPurchaseError("");
     let tempRate: any = rates.rates.filter((x: any) => x.isCheck == true)[0];
     console.log("tempRate", tempRate);
     let formatType: any = tempRate.supportedDocumentSpecifications.filter(
@@ -260,8 +264,12 @@ const Shipment = () => {
             ),
         },
         requestedValueAddedServices:
-          tempRate.availableValueAddedServiceGroups.flatMap((item: any) =>
-            item.valueAddedServices.map((service: any) => ({ id: service.id }))
+          tempRate?.availableValueAddedServiceGroups?.flatMap((item: any) =>
+            item?.valueAddedServices
+              ?.filter(
+                (service: any) => service?.id === "DELIVERY_CONFIRMATION"
+              )
+              .map((service: any) => ({ id: service?.id }))
           ),
       }, //[{id:'DELIVERY_CONFIRMATION'}]
       OrderId: order.id,
@@ -272,10 +280,12 @@ const Shipment = () => {
       if (res.data.status == "success") {
         openNotification("Success", "Shipment bought successfully!", "green");
 
-        await orderStatusChange({ id: order.id, status: 'Inprocess' });
+        await orderStatusChange({ id: order.id, status: "Inprocess" });
 
         router.refresh();
         // console.log(JSON.parse(res.data.result));
+      } else {
+        setPurchaseError(res.data?.result?.details);
       }
     });
   };
@@ -339,15 +349,31 @@ const Shipment = () => {
                         <div className="text-[12px] text-gray-500">
                           SKU:{" "}
                           <span className="font-semibold">
-                            {" "}
-                            {item.SellerSKU}{" "}
+                            {item.SellerSKU}
                           </span>
                         </div>
                         <div className="text-[12px] text-gray-500">
                           Order Item ID:{" "}
                           <span className="font-semibold">
-                            {" "}
-                            {item.OrderItemId}{" "}
+                            {item.OrderItemId}
+                          </span>
+                        </div>
+                        <div className="text-[12px] text-gray-500">
+                          Dimensions:{" "}
+                          <span className="font-semibold">
+                            {`${(
+                              item?.dimensions?.height?.value / 2.54
+                            ).toFixed(2)}" H x ${(
+                              item?.dimensions?.width?.value / 2.54
+                            ).toFixed(2)}" W x ${(
+                              item?.dimensions?.length?.value / 2.54
+                            ).toFixed(2)}" L`}
+                          </span>
+                        </div>
+                        <div className="text-[12px] text-gray-500">
+                          Wight:{" "}
+                          <span className="font-semibold">
+                            {`${(item?.weight?.value * 2.20462).toFixed(2)} LB`}
                           </span>
                         </div>
                         <div className="mt-1">
@@ -553,16 +579,26 @@ const Shipment = () => {
                 )}
               </Col>
             )}
-            <Col className="p-5">
-              {enableShipment && !order?.shipmentBought && (
-                <button
-                  className="shipment-btn text-[14px]"
-                  onClick={confirmShipment}
-                >
-                  <FaShippingFast />
-                  <div>Buy Shipment</div>
-                </button>
-              )}
+            <Col className="p-5" span={12}>
+              <div>
+                {enableShipment && !order?.shipmentBought && (
+                  <>
+                    <button
+                      className="shipment-btn text-[14px]"
+                      onClick={confirmShipment}
+                    >
+                      <FaShippingFast />
+                      <div>Buy Shipment</div>
+                    </button>
+
+                    {purchaseError && (
+                      <div className="my-4">
+                        <p className="text-red-500">{purchaseError}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </Col>
           </Row>
         </>
