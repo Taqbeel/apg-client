@@ -1,13 +1,14 @@
 "use client";
 
 import { getOrderByAPI, orderStatusChange } from "@/api/orders";
-import { getLabel, getRates, purchaseShipment } from "@/api/shipment";
+import { getRates, purchaseShipment } from "@/api/shipment";
 import { LoadingOutlined } from "@ant-design/icons";
-import { Col, Flex, InputNumber, Modal, Row, Select, Spin } from "antd";
+import { Col, Flex, InputNumber, Row, Select, Spin } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaShippingFast } from "react-icons/fa";
 
+import { addresses } from "@/addresses";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import timezone from "dayjs/plugin/timezone";
@@ -27,6 +28,11 @@ const Shipment = () => {
     requestToken: "",
     rates: [],
   });
+  const [addressOptions, setAddressOptions] = useState<
+    { value: number; label: string }[]
+  >([]);
+  const [selectedAddress, setSelectedAddress] = useState<number>(0);
+  const [addressFetchedFor, setAddressFetchedFor] = useState<string>("");
   const [enableShipment, setEnableShipment] = useState(false);
   const [load, setLoad] = useState(true);
   const [priceLoad, setPriceLoad] = useState(false);
@@ -40,12 +46,20 @@ const Shipment = () => {
     height: 1.0,
   });
 
-  const [document, setDocument]: any = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOk = () => setIsModalOpen(false);
-  const handleCancel = () => setIsModalOpen(false);
-
   useEffect(() => {
+    const address = addresses.map((ad) => {
+      return {
+        value: ad.id,
+        label: `${ad.addressLine1}, ${
+          ad.addressLine1 && ad.addressLine1 + ","
+        } ${ad.city}, ${ad.stateOrRegion}, ${ad.postalCode}, ${
+          ad.stateOrRegion
+        }`,
+      };
+    });
+
+    setAddressOptions(address);
+
     const id: any = searchParams.get("id");
     fetchOrderData(id);
   }, []);
@@ -89,9 +103,34 @@ const Shipment = () => {
     });
   };
 
-  const fetchRates = () => {
+  const fetchRates = async () => {
     setPurchaseError("");
     setError("");
+
+    // const address = selectedAddress !== undefined && addresses[selectedAddress];
+    const address = addresses[selectedAddress];
+
+    const shipFrom = {
+      name: order?.DefaultShipFromLocationAddress?.Name,
+      addressLine1: address
+        ? address?.addressLine1
+        : order?.DefaultShipFromLocationAddress?.AddressLine1,
+      // addressLine2: address ? address?.addressLine2 : "",
+      stateOrRegion: address
+        ? address?.stateOrRegion
+        : order?.DefaultShipFromLocationAddress?.StateOrRegion,
+      city: address
+        ? address?.city
+        : order?.DefaultShipFromLocationAddress?.City,
+      countryCode: address
+        ? address?.countryCode
+        : order?.DefaultShipFromLocationAddress?.CountryCode,
+      postalCode: address
+        ? address?.postalCode?.toString()
+        : order?.DefaultShipFromLocationAddress?.PostalCode,
+    };
+
+    console.log("shipFrom", shipFrom);
 
     let totalWeight = 0;
 
@@ -129,22 +168,7 @@ const Shipment = () => {
         postalCode: order?.BuyerAddress?.PostalCode,
         // phoneNumber: order?.BuyerInfo?.Phone?.slice(3,15),
       },
-      shipFrom: {
-        name: order?.DefaultShipFromLocationAddress?.Name,
-        addressLine1: order?.DefaultShipFromLocationAddress?.AddressLine1,
-        // addressLine2: "Suite 103",
-        stateOrRegion: order?.DefaultShipFromLocationAddress?.StateOrRegion,
-        city: order?.DefaultShipFromLocationAddress?.City,
-        countryCode: order?.DefaultShipFromLocationAddress?.CountryCode,
-        postalCode: order?.DefaultShipFromLocationAddress?.PostalCode,
-
-        // stateOrRegion: "NJ",
-        // addressLine1: "36 jaime court",
-        // postalCode: "08857",
-        // city: "OLD BRIDGE",
-        // countryCode: "US",
-        // name: "HIGH END FASHION",
-      },
+      shipFrom,
       packages: [
         {
           dimensions: {
@@ -200,11 +224,15 @@ const Shipment = () => {
       return;
     }
 
-    setPriceLoad(true);
-
     try {
-      getRates(data).then((x) => {
-        // console.log('responce', JSON.parse(x.data.result))
+      setEnableShipment(false);
+      setPriceLoad(true);
+      setRates({
+        requestToken: "",
+        rates: [],
+      });
+      await getRates(data).then((x) => {
+        // console.log('response', JSON.parse(x.data.result))
         if (x.data.status == "success") {
           let temp = JSON.parse(x.data.result)?.payload?.rates.map(
             (rate: any) => {
@@ -217,6 +245,7 @@ const Shipment = () => {
               (a: any, b: any) => a.totalCharge.value - b.totalCharge.value
             ),
           });
+          setAddressFetchedFor(addressOptions[selectedAddress].label);
         } else {
           setError(
             `Some data is missing from order therefore unable to fetch shipping rates`
@@ -288,34 +317,6 @@ const Shipment = () => {
         setPurchaseError(res.data?.result?.details);
       }
     });
-  };
-
-  const downloadLabel = () => {
-    // const openInNewTab = (url:string) => {
-    //   window.open(url, "_blank", "noreferrer");
-    // };
-    getLabel({
-      id: order.id,
-    })
-      .then((x: any) => {
-        if (x.data.status == "success") {
-          // openInNewTab(`data:application/pdf;base64,${x.data.result.document}`)
-          console.log(x.data.result.format);
-          let type = "";
-          if (x.data.result.format == "PNG") {
-            type = "image";
-          } else {
-            type = "application";
-          }
-          setDocument(
-            `data:${type}/${x.data.result.format};base64,${x.data.result.document}`
-          );
-          setIsModalOpen(true);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   };
 
   return (
@@ -460,11 +461,23 @@ const Shipment = () => {
                 </div>
               </Flex>
             </Col>
+          </Row>
 
-            <Col className="mx-4">
-              <br />
+          <Row style={{}}>
+            <Col style={{ flex: 1, marginTop: "0.5rem" }}>
+              <div>
+                <span className="mr-4">Address:</span>
+                <Select
+                  style={{ width: "75%" }}
+                  value={selectedAddress}
+                  onChange={setSelectedAddress}
+                  options={addressOptions}
+                />
+              </div>
+            </Col>
+            <Col style={{ width: "10rem" }}>
               <button
-                className="shipment-btn text-[14px]"
+                className="shipment-btn text-[14px] h-full w-full"
                 onClick={fetchRates}
                 disabled={priceLoad}
               >
@@ -474,18 +487,6 @@ const Shipment = () => {
                   <LoadingOutlined className="mx-5" />
                 )}
               </button>
-            </Col>
-            <Col className="mx-2">
-              <br />
-              {/* {order.shipmentBought && (
-                <button
-                  className="shipment-btn text-[14px]"
-                  onClick={downloadLabel}
-                >
-                  <FaFileDownload />
-                  <div>Download Label</div>
-                </button>
-              )} */}
             </Col>
           </Row>
 
@@ -503,80 +504,77 @@ const Shipment = () => {
                 </div>
               </>
             )}
-            {rates.rates.length != 0 && (
+            {priceLoad && <LoadingOutlined className="text-[30px] m-5" />}
+            {!priceLoad && rates?.rates?.length > 0 && (
               <Col span={12}>
-                {rates.rates.length > 0 && (
-                  <p className="text-[12px]">
-                    <b>
-                      Select from below shipping services
-                      {" ("}
-                      {rates.rates.length}
-                      {")"}
-                    </b>
-                  </p>
-                )}
-                {priceLoad && <LoadingOutlined className="text-[30px] m-5" />}
-                {!priceLoad && (
-                  <Row style={{ maxHeight: "40vh", overflowY: "auto" }}>
-                    <Col span={23}>
-                      <div className="mt-1">
-                        {rates.rates.map((rate: any, index) => {
-                          return (
-                            <div
-                              key={index}
-                              className={
-                                rate.isCheck ? "checked-rate-row" : "rate-row"
+                <p className="text-[12px]">
+                  <b>Address: {addressFetchedFor}</b>
+                </p>
+
+                <p className="text-[12px] mt-4">
+                  <b>
+                    Select from below shipping services
+                    {" ("}
+                    {rates.rates.length}
+                    {")"}
+                  </b>
+                </p>
+
+                <Row style={{ maxHeight: "40vh", overflowY: "auto" }}>
+                  <Col span={23}>
+                    <div className="mt-1">
+                      {rates.rates.map((rate: any, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className={
+                              rate.isCheck ? "checked-rate-row" : "rate-row"
+                            }
+                            onClick={() => {
+                              let temp: any = rates.rates.map((rate: any) => {
+                                return { ...rate, isCheck: false };
+                              });
+                              temp[index].isCheck = true;
+                              setRates({ ...rates, rates: temp });
+                              if (!enableShipment) {
+                                setEnableShipment(true);
                               }
-                              onClick={() => {
-                                let temp: any = rates.rates.map((rate: any) => {
-                                  return { ...rate, isCheck: false };
-                                });
-                                temp[index].isCheck = true;
-                                setRates({ ...rates, rates: temp });
-                                if (!enableShipment) {
-                                  setEnableShipment(true);
-                                }
-                              }}
-                            >
-                              <div>
-                                <p>
-                                  <b>{rate.serviceName}</b>
-                                </p>
-                              </div>
-                              <div>
-                                <p>
-                                  <span className="text-[18px]">
-                                    {`$${rate.totalCharge.value}`.split(".")[0]}
-                                  </span>
-                                  <span
-                                    className="text-[11px]"
-                                    style={{ position: "relative", bottom: 5 }}
-                                  >
-                                    <span>
-                                      {
-                                        ` ${rate.totalCharge.value}`.split(
-                                          "."
-                                        )[1]
-                                      }
-                                    </span>
-                                  </span>
-                                </p>
-                                <p className="text-gray-400">
-                                  {dayjs
-                                    .tz(
-                                      rate.promise.deliveryWindow.end,
-                                      "America/Toronto"
-                                    )
-                                    .format("ddd, MMM DD")}
-                                </p>
-                              </div>
+                            }}
+                          >
+                            <div>
+                              <p>
+                                <b>{rate.serviceName}</b>
+                              </p>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </Col>
-                  </Row>
-                )}
+                            <div>
+                              <p>
+                                <span className="text-[18px]">
+                                  {`$${rate.totalCharge.value}`.split(".")[0]}
+                                </span>
+                                <span
+                                  className="text-[11px]"
+                                  style={{ position: "relative", bottom: 5 }}
+                                >
+                                  <span>
+                                    {` ${rate.totalCharge.value}`.split(".")[1]}
+                                  </span>
+                                </span>
+                              </p>
+                              <p className="text-gray-400">
+                                {dayjs
+                                  .tz(
+                                    rate.promise.deliveryWindow.end,
+                                    "America/Toronto"
+                                  )
+                                  .format("ddd, MMM DD")}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Col>
+                </Row>
               </Col>
             )}
             <Col className="p-5" span={12}>
@@ -604,25 +602,6 @@ const Shipment = () => {
         </>
       )}
       {load && <Spin />}
-      <Modal
-        // title="Basic Modal"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        centered
-        footer={false}
-        width={540}
-      >
-        <div className="center">
-          {/* <embed src={document} height={500} width={500} /> */}
-          <iframe
-            src={document}
-            height={500}
-            width={500}
-            style={{ border: "none" }}
-          />
-        </div>
-      </Modal>
     </>
   );
 };
