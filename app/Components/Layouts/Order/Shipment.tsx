@@ -233,7 +233,7 @@ const Shipment = () => {
       });
       await getRates(data).then((x) => {
         // console.log('response', JSON.parse(x.data.result))
-        if (x.data.status == "success") {
+        if (x?.data?.status == "success") {
           let temp = JSON.parse(x.data.result)?.payload?.rates.map(
             (rate: any) => {
               return { ...rate, isCheck: false };
@@ -247,9 +247,17 @@ const Shipment = () => {
           });
           setAddressFetchedFor(addressOptions[selectedAddress].label);
         } else {
-          setError(
-            `Some data is missing from order therefore unable to fetch shipping rates`
-          );
+          if (x?.data?.result?.code === "InternalFailure") {
+            fetchRates();
+            return;
+            // setError(
+            //   `Try Again!`
+            // );
+          } else {
+            setError(
+              `Some data is missing from order therefore unable to fetch shipping rates`
+            );
+          }
         }
       });
     } catch (error) {
