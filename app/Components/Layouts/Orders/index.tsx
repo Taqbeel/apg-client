@@ -55,7 +55,7 @@ const Orders: React.FC = () => {
   const [orderStatus, setOrderStatus] = useState("Unshipped");
   const [vendor, setVendor] = useState("");
   const [orderId, setOrderId] = useState("");
-  const [orderType, setOrderType] = useState("");
+  const [pONumber, setPONumber] = useState("");
   const [key, setKey] = useState("1");
   const [document, setDocument]: any = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -97,7 +97,7 @@ const Orders: React.FC = () => {
         {},
         orderId,
         orderStatus,
-        orderType,
+        pONumber,
         vendor
       );
       if (tempUser.type != "admin") {
@@ -423,6 +423,18 @@ const Orders: React.FC = () => {
                             : "Vendor"}
                         </span>
                       </div>
+                      {item?.poNumber && <div
+                        className="text-[10px] text-gray-500 mt-2"
+                        style={{ lineHeight: 1.1 }}
+                      >
+                        PO Number:
+                        <span
+                          className={`font-semibold text-sm text-green-500`}
+                        >
+                          {" "}
+                          {item?.poNumber}
+                        </span>
+                      </div>}
                     </div>
                   </div>
                   <hr className="my-1" />
@@ -679,9 +691,9 @@ const Orders: React.FC = () => {
         </Col> */}
         <Col span={6}>
           <Input
-            placeholder="Order Type"
-            value={orderType}
-            onChange={(e) => setOrderType(e.target.value)}
+            placeholder="PO Number"
+            value={pONumber}
+            onChange={(e) => setPONumber(e.target.value)}
           />
         </Col>
         <Col span={6}>

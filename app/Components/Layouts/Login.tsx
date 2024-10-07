@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { TiUser } from "react-icons/ti";
-import { FaLock } from "react-icons/fa";
-import { useRouter } from "next/navigation";
 import { userAuth } from "@/api/auth";
 import { Spin } from "antd";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { FaLock } from "react-icons/fa";
+import { TiUser } from "react-icons/ti";
 import openNotification from "../Shared/Notification";
 
 const Login = () => {
@@ -26,7 +26,7 @@ const Login = () => {
       setLoad(false);
       if (x.data.status == "success") {
         Cookies.set("token", x.data.token, { expires: 1 });
-        router.push("/dashboard");
+        router.push("/dashboard/orders");
       } else {
         openNotification("Error", "Incorrect Credentials", "red");
       }

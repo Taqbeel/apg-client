@@ -258,6 +258,7 @@ const AlbOrder = () => {
       })
     });
   };
+
   const fetchAddtionalOrders = async(data:Array<string>) => {
     let tempItemNos = [...data];
     if(tempItemNos.length>0){
@@ -274,6 +275,7 @@ const AlbOrder = () => {
       getTotalPrice(globalItemsList);
     }
   };
+  
   const columns: TableProps<DataType>['columns'] = [
     {
       title: 'Dated',//<><input type='checkbox' /></>,
