@@ -423,18 +423,48 @@ const Orders: React.FC = () => {
                             : "Vendor"}
                         </span>
                       </div>
-                      {item?.poNumber && <div
-                        className="text-[10px] text-gray-500 mt-2"
-                        style={{ lineHeight: 1.1 }}
-                      >
-                        PO Number:
-                        <span
-                          className={`font-semibold text-sm text-green-500`}
+                      {item?.poNumber && (
+                        <div
+                          className="text-[10px] text-gray-500 mt-2"
+                          style={{ lineHeight: 1.1 }}
                         >
-                          {" "}
-                          {item?.poNumber}
-                        </span>
-                      </div>}
+                          PO Number:
+                          <span
+                            className={`font-semibold text-sm text-green-500`}
+                          >
+                            {" "}
+                            {item?.poNumber}
+                          </span>
+                        </div>
+                      )}
+                      {item?.trackingNumber && (
+                        <div
+                          className="text-[10px] text-gray-500 mt-2"
+                          style={{ lineHeight: 1.1 }}
+                        >
+                          Tracking Number:
+                          <span
+                            className={`font-semibold text-sm text-green-500`}
+                          >
+                            {" "}
+                            {item?.trackingNumber}
+                          </span>
+                        </div>
+                      )}
+                      {item?.expectedDelivery && (
+                        <div
+                          className="text-[10px] text-gray-500 mt-2"
+                          style={{ lineHeight: 1.1 }}
+                        >
+                          Expected Delivery:
+                          <span
+                            className={`font-semibold text-sm text-green-500`}
+                          >
+                            {" "}
+                            {item?.expectedDelivery}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <hr className="my-1" />
@@ -616,10 +646,12 @@ const Orders: React.FC = () => {
     key == "1"
       ? (tempStatus = "Unshipped")
       : key == "2"
-      ? (tempStatus = "Inprocess")
+      ? (tempStatus = "Arriving")
       : key == "3"
-      ? (tempStatus = "Shipped")
+      ? (tempStatus = "Inprocess")
       : key == "4"
+      ? (tempStatus = "Shipped")
+      : key == "5"
       ? (tempStatus = "Transit")
       : (tempStatus = "Delivered");
 
@@ -645,21 +677,26 @@ const Orders: React.FC = () => {
     },
     {
       key: "2",
-      label: "In-Process",
+      label: "Arriving",
       children: <TableComponent />,
     },
     {
       key: "3",
-      label: "Shipped",
+      label: "In-Process",
       children: <TableComponent />,
     },
     {
       key: "4",
-      label: "In-Transit",
+      label: "Shipped",
       children: <TableComponent />,
     },
     {
       key: "5",
+      label: "In-Transit",
+      children: <TableComponent />,
+    },
+    {
+      key: "6",
       label: "Delivered",
       children: <TableComponent />,
     },
