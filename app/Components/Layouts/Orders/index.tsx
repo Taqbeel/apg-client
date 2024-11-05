@@ -544,45 +544,47 @@ const Orders: React.FC = () => {
     },
     {
       title:
-        status != "transit" && status != "delivered"
+        status != "Transit" && status != "delivered" && status != "Shipped"
           ? "Actions"
-          : status == "transit"
+          : status == "Transit" || status == "Shipped"
           ? "Tracking"
           : "-",
       key: "user",
       render: (data) => {
         return (
           <>
-            {status != "transit" && status != "delivered" && (
-              <>
-                <div className="shipment-btn text-[11px]">
-                  {orderStatus === "Inprocess" ? (
-                    <div>
-                      <button
-                        className="shipment-btn text-[14px]"
-                        onClick={() => downloadLabel(data?.id)}
+            {status != "Transit" &&
+              status != "delivered" &&
+              status != "Shipped" && (
+                <>
+                  <div className="shipment-btn text-[11px]">
+                    {orderStatus === "Inprocess" ? (
+                      <div>
+                        <button
+                          className="shipment-btn text-[14px]"
+                          onClick={() => downloadLabel(data?.id)}
+                        >
+                          <FaFileDownload />
+                          <div>Print Label</div>
+                        </button>
+                      </div>
+                    ) : (
+                      <Link
+                        href={`/dashboard/shipment?id=${data["AmazonOrderId"]}`}
                       >
-                        <FaFileDownload />
-                        <div>Print Label</div>
-                      </button>
-                    </div>
-                  ) : (
-                    <Link
-                      href={`/dashboard/shipment?id=${data["AmazonOrderId"]}`}
-                    >
-                      <span className="no-underline text-white">
-                        Buy Shipping
-                      </span>
-                    </Link>
-                  )}
-                </div>
-              </>
-            )}
-            {status == "transit" && (
+                        <span className="no-underline text-white">
+                          Buy Shipping
+                        </span>
+                      </Link>
+                    )}
+                  </div>
+                </>
+              )}
+            {(status == "Transit" || status == "Shipped") && (
               <>
                 <div className="shipment-btn text-[11px] my-2">
                   <Link
-                    href={`/dashboard/tracking?id=${data["AmazonOrderId"]}`}
+                    href={`/dashboard/tracking?id=${data["AmazonOrderId"]}&vendorName=${data["vendorName"]}`}
                   >
                     <span className="no-underline text-white">
                       Order Tracking
