@@ -406,6 +406,23 @@ const Orders: React.FC = () => {
                         </span>
                       </div>
                       <div
+                        className="text-[10px] text-gray-500 mt-1"
+                        style={{ lineHeight: 1.1 }}
+                      >
+                        Colors:
+                        <span className="font-semibold">
+                          {" "}
+                          {item.itemColors}
+                        </span>
+                      </div>
+                      <div
+                        className="text-[10px] text-gray-500 mt-1"
+                        style={{ lineHeight: 1.1 }}
+                      >
+                        Size:
+                        <span className="font-semibold"> {item.itemSize}</span>
+                      </div>
+                      <div
                         className="text-[10px] text-gray-500 mt-2"
                         style={{ lineHeight: 1.1 }}
                       >
@@ -800,8 +817,8 @@ const Orders: React.FC = () => {
             <iframe
               ref={contentToPrint}
               src={document}
-              height="500"
-              className="w-full flex justify-center items-center"
+              // height="500"
+              className="w-full flex justify-center items-center aspect-[9/16]"
             />
           </div>
           <div className="flex justify-center mt-4 w-full">

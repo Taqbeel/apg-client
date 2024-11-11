@@ -268,8 +268,8 @@ const Order = () => {
     let tempRate: any = rates.rates.filter((x: any) => x.isCheck == true)[0];
     console.log("tempRate", tempRate);
     let formatType: any = tempRate.supportedDocumentSpecifications.filter(
-      (x: any) => x.format == "PDF" || x.format == "PNG"
-      // (x: any) => x.format == "PNG"
+      // (x: any) => x.format == "PNG" || x.format == "PDF"
+      (x: any) => x.format == "PNG"
     )[0];
     console.log("formatType", formatType);
 
